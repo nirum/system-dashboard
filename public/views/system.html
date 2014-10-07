@@ -1,0 +1,33 @@
+<!-- system.html -->
+<div class="row">
+    <div class="col-md-10 col-md-offset-1">
+        <div class="row">
+            <div class="col-md-12">
+                <h2>System: {{ os.hostname }} running {{ os.type }} {{ os.release }}, {{ os.arch }}</h2>
+                <p class="lead">Online since: {{ os.uptime }}</p>
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped" role="progressbar" aria-valuenow="{{ os.memory }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ os.memory }}%;">
+                        Memory used: {{ os.memory }}%
+                    </div>
+                </div>
+                <hr/>
+                <h2>CPUs</h2>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3" ng-repeat="cpu in os.cpus">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        [{{ $index+1 }}] {{ cpu.model }}
+                    </div>
+                    <div class="panel-body">
+                        <nvd3-pie-chart data="cpu.times" id="cpu{{ $index }}" width="250" height="250" x="xfun()" y="yfun()" color="color()" showLabels="true" tooltips="true">
+                            <svg></svg>
+                        </nvd3-pie-chart>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,29 @@
+<!-- home.html -->
+<div class="row">
+	<div class="col-md-3 col-sm-5">
+		<form class="form-inline" role="form" ng-submit="getTag(local.currentTag._id)">
+			<div class="form-group">
+				<label>Tag:</label>
+				<input class="form-control" ng-keyup="local.currentPaper = null" type="text" ng-model="local.currentTag" typeahead="tag as tag.name for tag in tags | filter:$viewValue | limitTo:8" />
+				<button type="submit" class="btn btn-success"><span class="glyphicon glyphicon-play"></span></button>
+			</div>
+		</form>
+
+		<hr/>
+		<alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</alert>
+
+		<ul class="nav nav-pills nav-stacked">
+			<li ng-repeat="paper in papers" ng-class="{active: isActivePaper(paper)}">
+				<a ng-click="setPaper(paper)">{{paper.filename}}</a>
+			</li>
+		</ul>
+
+	</div>
+
+	<div class="col-md-8 col-sm-6" ng-show="local.currentPaper">
+		<h2>{{local.currentPaper.title}}</h2>
+		<p class="lead">{{local.currentPaper.filename}}</p>
+		<svg id="wordcloud"></svg>
+	</div>
+
+</div>
