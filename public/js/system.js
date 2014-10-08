@@ -15,16 +15,17 @@ app.controller('SystemCtrl', function ($scope, $http) {
 
     $http.get('/api/process')
         .success(function (data) {
-            $scope.usage = data;
-            $scope.memory = [{
-               "key": "Memory",
-               "values": data
-            }];
+            $scope.processes = _.pairs(data);
         })
         .error(function (err) {
             console.log('Error!' + err);
         });
 
+    $scope.selected = {};
+    $scope.newRadio = function () {
+        console.log('update plot: ' + $scope.selected.pid)
+        memUsage($scope.selected.pid, '#memoryChart', 800, 200, 20);
+    };
     $scope.line = {};
     $scope.line.yfun = function () {
         return function (d) {
@@ -57,6 +58,41 @@ app.controller('SystemCtrl', function ($scope, $http) {
             ++u;
         } while(bytes >= thresh);
         return bytes.toFixed(1)+' '+units[u];
+    };
+
+    // line chart
+    var memUsage = function (pid, chartid, w, h, pad) {
+        d3.json('/api/process/' + pid, function (data) {
+
+            var iso = d3.time.format.iso;
+            console.log(iso.parse(data[0].time));
+
+            var svg = d3.select(chartid)
+                .attr("width", w)
+                .attr("height", h);
+
+            var x = d3.time.scale()
+                .range([pad, w-pad])
+                .domain(d3.extent(data, function(d) { return iso.parse(d.time); }))
+
+            var y = d3.scale.linear()
+                .range([h-pad, pad])
+                .domain(d3.extent(data, function(d) { return d.memory; }));
+
+            var circles = svg.selectAll("circle").data(data)
+
+            circles.enter()
+                .append("circle")
+                .attr("r", 1)
+                .attr("cx", function(d) {return x(iso.parse(d.time)); })
+                .attr("cy", function(d) {return y(d.memory);})
+            circles.transition()
+                .attr("cx", function(d) {return x(iso.parse(d.time)); })
+                .attr("cy", function(d) {return y(d.memory);})
+                .attr("fill", "red")
+            circles.exit().remove();
+
+        });
     };
 
     // system pie charts

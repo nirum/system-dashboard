@@ -14,13 +14,16 @@ db.on('error', function() {
 
 // set up Model schema
 var Log = mongoose.model('Log', new mongoose.Schema({
-        pid: Number,
-        name: String,
-        memory: Number,
-        cpu: Number,
-        time: Date
-    })
-);
+    pid: String,
+    name: String,
+    memory: Number,
+    cpu: Number,
+    time: Date
+}));
+var Active = mongoose.model('Active', new mongoose.Schema({
+    ipython: [Number],
+    matlab: [Number]
+}));
 
 // GET system information
 router.get('/system', function(req, res) {
@@ -41,14 +44,14 @@ router.get('/system', function(req, res) {
 
 // GET process information
 router.get('/process', function (req, res) {
-    Log.find({}, function (err, data) {
+    Active.findOne({}, function (err, data) {
         res.json(data);
     });
 });
 
 // GET process information for a specific process name
-router.get('/process/:name', function (req, res) {
-    Log.find({'name': req.params.name}, function (err, data) {
+router.get('/process/:id', function (req, res) {
+    Log.find({"pid":req.params.id}, function (err, data) {
         res.json(data);
     });
 });

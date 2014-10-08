@@ -16,14 +16,32 @@
         <div class="row">
             <div class="col-md-12">
                 <hr/>
-                <h2>Memory</h2>
+                <h2>Processes</h2>
             </div>
         </div>
 
         <div class="row">
-            <nvd3-line-chart data="memory" id="memoryChart" forcex="[]" forcey="[]" useInteractiveGuideLine="true" width="1000" height="250" showXAxis="true" showYAxis="true" x="line.xfun()" y="line.yfun()" xAxisTickFormat="line.xticks()" yAxisTickFormat="line.yticks()">
-                <svg></svg>
-            </nvd3-line-chart>
+            <div class="col-md-2">
+                {{ selected.pid }} <br/>
+                <p ng-repeat="process in processes">
+                    {{ process[0] }}
+                    <label ng-repeat="pid in process[1]" for="{{pid}}">
+                        <input name="processid" id="{{pid}}" type="radio" ng-model="selected.pid" ng-value="pid" ng-change="newRadio()">{{ pid }} <br/>
+                    </label>
+                </p>
+                <!--<form>-->
+                    <!--<div ng-repeat="process in processes">-->
+                        <!--<span>{{ process[0] }}</span>-->
+                        <!--<div class="radio" ng-repeat="pid in process[1]">-->
+                            <!--<input type="radio" name="process" value="{{ pid }}" ng-model="radio">-->
+                            <!--Process {{ pid }}-->
+                        <!--</div>-->
+                    <!--</div>-->
+                <!--</form>-->
+            </div>
+            <div class="col-md-10">
+                <svg id="memoryChart"></svg>
+            </div>
         </div>
 
         <div class="row">
