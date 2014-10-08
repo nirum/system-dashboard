@@ -10,6 +10,24 @@
                         Memory used: {{ os.memory }}%
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <hr/>
+                <h2>Memory</h2>
+            </div>
+        </div>
+
+        <div class="row">
+            <nvd3-line-chart data="memory" id="memoryChart" forcex="[]" forcey="[]" useInteractiveGuideLine="true" width="1000" height="250" showXAxis="true" showYAxis="true" x="line.xfun()" y="line.yfun()" xAxisTickFormat="line.xticks()" yAxisTickFormat="line.yticks()">
+                <svg></svg>
+            </nvd3-line-chart>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
                 <hr/>
                 <h2>CPUs</h2>
             </div>
@@ -22,7 +40,7 @@
                         [{{ $index+1 }}] {{ cpu.model }}
                     </div>
                     <div class="panel-body">
-                        <nvd3-pie-chart data="cpu.times" id="cpu{{ $index }}" width="250" height="250" x="xfun()" y="yfun()" color="color()" showLabels="true" tooltips="true">
+                        <nvd3-pie-chart data="cpu.times" id="cpu{{ $index }}" width="250" height="250" x="pie.xfun()" y="pie.yfun()" color="pie.color()" showLabels="true" tooltips="true">
                             <svg></svg>
                         </nvd3-pie-chart>
                     </div>

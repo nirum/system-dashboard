@@ -10,24 +10,72 @@ app.controller('SystemCtrl', function ($scope, $http) {
             });
         })
         .error(function (err) {
-            console.log('Error!' + err)
-        })
+            console.log('Error!' + err);
+        });
 
-    $scope.xfun = function(){
+    $http.get('/api/process')
+        .success(function (data) {
+            $scope.usage = data;
+            $scope.memory = [{
+               "key": "Memory",
+               "values": data
+            }];
+        })
+        .error(function (err) {
+            console.log('Error!' + err);
+        });
+
+    $scope.line = {};
+    $scope.line.yfun = function () {
+        return function (d) {
+            return d.memory;  // Megabytes
+        }
+    };
+    $scope.line.xfun = function () {
+        return function (d) {
+            return moment(d.time).unix();
+        }
+    };
+    $scope.line.xticks = function () {
+        return function (d) {
+            return moment.unix(d).format('h:mm:ss');
+        };
+    };
+    $scope.line.yticks = function () {
+        return function (d) {
+            return humanFileSize(d, true);
+        }
+    };
+
+    var humanFileSize = function(bytes, si) {
+        var thresh = si ? 1000 : 1024;
+        if(bytes < thresh) return bytes + ' B';
+        var units = si ? ['kB','MB','GB','TB','PB','EB','ZB','YB'] : ['KiB','MiB','GiB','TiB','PiB','EiB','ZiB','YiB'];
+        var u = -1;
+        do {
+            bytes /= thresh;
+            ++u;
+        } while(bytes >= thresh);
+        return bytes.toFixed(1)+' '+units[u];
+    };
+
+    // system pie charts
+    $scope.pie = {};
+    $scope.pie.xfun = function(){
         return function(d) {
             return d[0];
         };
-    }
-    $scope.yfun = function(){
+    };
+    $scope.pie.yfun = function(){
         return function(d){
             return d[1] / (1000 * 3600); // hours
         };
-    }
+    };
 
     var colors = d3.scale.category10();
-    $scope.color = function() {
+    $scope.pie.color = function() {
         return function(d, i) {
             return colors(i);
         };
-    }
+    };
 });
