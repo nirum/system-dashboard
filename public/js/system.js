@@ -54,6 +54,10 @@ app.controller('SystemCtrl', function ($scope, $interval, $http) {
             h = 500;
 
         memUsage($scope.selected.pid, margin, w, h);
+        function wrapper() {
+            memUsage($scope.selected.pid, margin, w, h);
+        }
+        $interval(wrapper, 1000);
     };
 
     var humanFileSize = function(bytes, si) {
