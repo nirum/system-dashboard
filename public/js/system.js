@@ -1,9 +1,9 @@
 // Controller
-app.controller('SystemCtrl', function ($scope, $http) {
+app.controller('SystemCtrl', function ($scope, $interval, $http) {
+
     $http.get('/api/system')
         .success(function (data) {
             $scope.os = data;
-            $scope.os.memory = Math.round($scope.os.fracmem * 10000) / 100;
             $scope.os.cpus = _.map($scope.os.cpus, function(cpu) {
                 cpu.times = _.pairs(cpu.times);
                 return cpu;
@@ -12,6 +12,31 @@ app.controller('SystemCtrl', function ($scope, $http) {
         .error(function (err) {
             console.log('Error!' + err);
         });
+
+    function refreshData() {
+        $http.get('/api/system/memory')
+            .success(function (data) {
+                $scope.memory = Math.round(data.fracmem * 10000) / 100;
+
+                bounds = [0.3, 0.5, 0.7, 0.9, 1];
+                if (data.fracmem < bounds[0]) {
+                    $scope.memoryClass = 'success';
+                } else if (data.fracmem < bounds[1]) {
+                    $scope.memoryClass = 'primary';
+                } else if (data.fracmem < bounds[2]) {
+                    $scope.memoryClass = 'info';
+                } else if (data.fracmem < bounds[3]) {
+                    $scope.memoryClass = 'warning';
+                } else {
+                    $scope.memoryClass = 'danger';
+                };
+            })
+            .error(function (err) {
+                console.log('Error!' + err);
+            });
+    };
+
+    $interval(refreshData, 500);
 
     $http.get('/api/process')
         .success(function (data) {
@@ -24,28 +49,11 @@ app.controller('SystemCtrl', function ($scope, $http) {
     $scope.selected = {};
     $scope.newRadio = function () {
         console.log('update plot: ' + $scope.selected.pid)
-        memUsage($scope.selected.pid, '#memoryChart', 800, 200, 20);
-    };
-    $scope.line = {};
-    $scope.line.yfun = function () {
-        return function (d) {
-            return d.memory;  // Megabytes
-        }
-    };
-    $scope.line.xfun = function () {
-        return function (d) {
-            return moment(d.time).unix();
-        }
-    };
-    $scope.line.xticks = function () {
-        return function (d) {
-            return moment.unix(d).format('h:mm:ss');
-        };
-    };
-    $scope.line.yticks = function () {
-        return function (d) {
-            return humanFileSize(d, true);
-        }
+        var margin = {top: 20, right: 20, bottom: 30, left: 75},
+            w = 960,
+            h = 500;
+
+        memUsage($scope.selected.pid, margin, w, h);
     };
 
     var humanFileSize = function(bytes, si) {
@@ -60,37 +68,70 @@ app.controller('SystemCtrl', function ($scope, $http) {
         return bytes.toFixed(1)+' '+units[u];
     };
 
+    var humanDate = function (date) {
+        return moment(date).format("h:mm:ss");
+    };
+
     // line chart
-    var memUsage = function (pid, chartid, w, h, pad) {
+    var memUsage = function (pid, margin, w, h) {
         d3.json('/api/process/' + pid, function (data) {
 
-            var iso = d3.time.format.iso;
-            console.log(iso.parse(data[0].time));
+            var width = w - margin.left - margin.right,
+                height = h - margin.top - margin.bottom;
 
-            var svg = d3.select(chartid)
-                .attr("width", w)
-                .attr("height", h);
+            var parseTime = d3.time.format.iso.parse;
 
+            // Scales
             var x = d3.time.scale()
-                .range([pad, w-pad])
-                .domain(d3.extent(data, function(d) { return iso.parse(d.time); }))
-
+                .range([0,width])
+                .domain(d3.extent(data, function(d) { return parseTime(d.time); }));
             var y = d3.scale.linear()
-                .range([h-pad, pad])
+                .range([height,0])
                 .domain(d3.extent(data, function(d) { return d.memory; }));
 
-            var circles = svg.selectAll("circle").data(data)
+            // Axes
+            var xAxis = d3.svg.axis()
+                .scale(x)
+                .tickFormat(function(d) { return humanDate(d); })
+                .orient("bottom");
+            var yAxis = d3.svg.axis()
+                .scale(y)
+                .tickFormat(function(d) {return humanFileSize(d, true);})
+                .orient("left");
 
-            circles.enter()
-                .append("circle")
-                .attr("r", 1)
-                .attr("cx", function(d) {return x(iso.parse(d.time)); })
-                .attr("cy", function(d) {return y(d.memory);})
-            circles.transition()
-                .attr("cx", function(d) {return x(iso.parse(d.time)); })
-                .attr("cy", function(d) {return y(d.memory);})
-                .attr("fill", "red")
-            circles.exit().remove();
+            var line = d3.svg.line()
+                .x(function(d) {return x(parseTime(d.time));})
+                .y(function(d) {return y(d.memory);});
+
+            d3.select("#memoryChart").html("");
+
+            var svg = d3.select("#memoryChart")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            svg.append("g")
+                    .attr("class", "y axis")
+                    .call(yAxis)
+                .append("text")
+                    .attr("transform", "rotate(-90)")
+                    .attr("y", 10)
+                    .attr("x", -10)
+                    .attr("dy", "0.71em")
+                    .style("text-anchor", "end")
+                    .style("font-size", "24px")
+                    .text("Memory usage");
+
+            svg.append("g")
+                .attr("class", "x axis")
+                .call(xAxis)
+                .attr("transform", "translate(0," + height + ")");
+
+            svg.append("path")
+                .datum(data)
+                .attr("class", "line")
+                .attr("d", line);
 
         });
     };

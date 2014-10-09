@@ -35,10 +35,16 @@ router.get('/system', function(req, res) {
         release: os.release(),
         uptime: moment.unix(moment().unix() - os.uptime()).fromNow(),
         loadavg: os.loadavg(),
+        cpus: os.cpus()
+    });
+});
+
+// GET system memory
+router.get('/system/memory', function (req, res) {
+    res.json({
         totalmem: os.totalmem(),
         freemem: os.freemem(),
-        fracmem: os.freemem() / os.totalmem(),
-        cpus: os.cpus()
+        fracmem: 1 - os.freemem() / os.totalmem()
     });
 });
 

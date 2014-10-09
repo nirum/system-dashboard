@@ -13,3 +13,17 @@ a {
     font-size: 18px;
     padding-top: 5px;
 }
+
+/* Charts */
+.axis path,
+.axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}
+
+.line {
+    fill: none;
+    stroke: steelblue;
+    stroke-width: 4.0px;
+}

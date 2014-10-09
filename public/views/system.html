@@ -3,13 +3,9 @@
     <div class="col-md-10 col-md-offset-1">
         <div class="row">
             <div class="col-md-12">
-                <h2>System: {{ os.hostname }} running {{ os.type }} {{ os.release }}, {{ os.arch }}</h2>
+                <h2>System: {{ os.hostname }} running {{ os.type }} {{ os.release }}</h2>
                 <p class="lead">Online since: {{ os.uptime }}</p>
-                <div class="progress">
-                    <div class="progress-bar progress-bar-striped" role="progressbar" aria-valuenow="{{ os.memory }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ os.memory }}%;">
-                        Memory used: {{ os.memory }}%
-                    </div>
-                </div>
+                <progressbar class="progress-striped active" value="memory" type="{{memoryClass}}">Memory used: {{memory}}%</progressbar>
             </div>
         </div>
 
@@ -22,7 +18,6 @@
 
         <div class="row">
             <div class="col-md-2">
-                {{ selected.pid }} <br/>
                 <p ng-repeat="process in processes">
                     {{ process[0] }}
                     <label ng-repeat="pid in process[1]" for="{{pid}}">
